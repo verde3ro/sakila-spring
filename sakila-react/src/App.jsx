@@ -1,0 +1,348 @@
+import { useEffect, useState, useRef } from "react";
+import {
+	getCitiesPagination,
+	deleteCity,
+	createCity,
+	updateCity,
+	getCountries,
+	downloadExcel,
+} from "./services/cityService";
+
+import { DataTable } from "primereact/datatable";
+import { Column } from "primereact/column";
+import { Button } from "primereact/button";
+import { Dialog } from "primereact/dialog";
+import { InputText } from "primereact/inputtext";
+import { Dropdown } from "primereact/dropdown";
+import { Calendar } from "primereact/calendar";
+import { Toast } from "primereact/toast";
+import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
+
+const rowsPerPageOptions = [5, 10, 20, 50];
+
+// Helper fecha
+const parseDate = (value) => {
+	if (!value) return null;
+	if (value instanceof Date) return value;
+
+	if (typeof value === "string") {
+		const date = new Date(value);
+		return Number.isNaN(date.getTime()) ? null : date;
+	}
+	return null;
+};
+
+const App = () => {
+	const toast = useRef(null);
+	const isFirstLoad = useRef(true);
+
+	const [cities, setCities] = useState([]);
+	const [countries, setCountries] = useState([]);
+	const [totalRecords, setTotalRecords] = useState(0);
+	const [loading, setLoading] = useState(false);
+	const [city, setCity] = useState({
+		cityId: null,
+		city: "",
+		countryId: null,
+		lastUpdate: null,
+	});
+
+	const [visible, setVisible] = useState(false);
+	const [first, setFirst] = useState(0);
+	const [rows, setRows] = useState(10);
+	const [sortField, setSortField] = useState("cityId");
+	const [sortOrder, setSortOrder] = useState(1);
+
+	const loadCities = async ({ page, size, sf, so }) => {
+		setLoading(true);
+		try {
+			const res = await getCitiesPagination({
+				page,
+				size,
+				sortField: sf,
+				sortOrder: so === 1 ? "asc" : "desc",
+			});
+
+			setCities(res.data.content);
+			setTotalRecords(res.data.totalElements);
+		} catch (error) {
+			toast.current?.show({
+				severity: "error",
+				summary: "Error",
+				detail: "Error cargando datos",
+			});
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	const loadCountries = async () => {
+		try {
+			const res = await getCountries();
+			setCountries(res.data);
+		} catch (error) {
+			console.error(error);
+		}
+	};
+
+	useEffect(() => {
+		if (!isFirstLoad.current) return;
+
+		isFirstLoad.current = false;
+
+		loadCities({ page: 0, size: rows, sf: sortField, so: sortOrder }).then(r => console.log(r));
+		loadCountries().then(r => console.log(r));
+	}, []);
+
+	const onSort = (event) => {
+		setSortField(event.sortField);
+		setSortOrder(event.sortOrder);
+		setFirst(0);
+
+		loadCities({
+			page: 0,
+			size: rows,
+			sf: event.sortField,
+			so: event.sortOrder,
+		}).then(r => console.log(r));
+	};
+
+	const onPage = (event) => {
+		const newFirst = event.first;
+		const newRows = event.rows;
+
+		setFirst(newFirst);
+		setRows(newRows);
+
+		loadCities({
+			page: Math.floor(newFirst / newRows),
+			size: newRows,
+			sf: sortField,
+			so: sortOrder,
+		}).then(r => console.log(r));
+	};
+
+	const openNew = () => {
+		setCity({
+			cityId: null,
+			city: "",
+			countryId: null,
+			lastUpdate: new Date(),
+		});
+		setVisible(true);
+	};
+
+	const editCity = (row) => {
+		setCity({
+			...row,
+			lastUpdate: parseDate(row.lastUpdate),
+		});
+		setVisible(true);
+	};
+
+	const saveCity = async () => {
+		try {
+			const payload = {
+				...city,
+				lastUpdate: city.lastUpdate ? city.lastUpdate.toISOString() : null,
+			};
+
+			if (city.cityId) {
+				await updateCity(payload);
+				toast.current.show({ severity: "success", summary: "Actualizado" });
+			} else {
+				await createCity(payload);
+				toast.current.show({ severity: "success", summary: "Creado" });
+			}
+
+			setVisible(false);
+
+			const currentPage = Math.floor(first / rows);
+
+			loadCities({
+				page: currentPage,
+				size: rows,
+				sf: sortField,
+				so: sortOrder,
+			}).then(r => console.log(r));
+		} catch (error) {
+			let errorMessage = "Error guardando";
+			let errorTitle = "Error de validación";
+
+			// Extraer mensaje del backend (soporta varias estructuras comunes)
+			if (error.response) {
+				const data = error.response.data;
+				if (data) {
+					// Caso: { title, status, detail }
+					if (typeof data === "object") {
+						errorMessage = data.detail || data.message || data.error || JSON.stringify(data);
+						errorTitle = data.title || data.error || "Error";
+					} else if (typeof data === "string") {
+						errorMessage = data;
+					}
+				} else {
+					errorMessage = `Error ${error.response.status}: ${error.response.statusText}`;
+				}
+			} else if (error.request) {
+				// No hubo respuesta del servidor
+				errorMessage = "No se recibió respuesta del servidor. Verifica tu conexión.";
+				errorTitle = "Error de red";
+			} else {
+				// Error en la configuración de la solicitud
+				errorMessage = error.message || "Error inesperado";
+			}
+
+			toast.current.show({
+				severity: "error",
+				summary: errorTitle,
+				detail: errorMessage,
+			});
+		}
+	};
+
+	const confirmDelete = (row) => {
+		confirmDialog({
+			message: "<b>¿Eliminar registro?</b>",
+			header: "Confirmar",
+			icon: "pi pi-exclamation-triangle",
+			accept: () => removeCity(row),
+		});
+	};
+
+	const removeCity = async (row) => {
+		await deleteCity(row.cityId);
+
+		toast.current.show({ severity: "warn", summary: "Eliminado" });
+
+		loadCities({
+			page: Math.floor(first / rows),
+			size: rows,
+			sf: sortField,
+			so: sortOrder,
+		}).then(r => console.log(r));
+	};
+
+	const handleDownloadExcel = async () => {
+		const res = await downloadExcel();
+
+		const link = document.createElement("a");
+		link.href = `data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,${res.data.base64}`;
+		link.download = "cities.xlsx";
+		link.click();
+	};
+
+	// ahora usa lastUpdate
+	const dateBodyTemplate = (rowData) => {
+		const date = parseDate(rowData.lastUpdate);
+		if (!date) return "";
+		return date.toLocaleString();
+	};
+
+	return (
+		<div className="p-3">
+			<Toast ref={toast} />
+			<ConfirmDialog />
+
+			<div className="flex justify-content-between mb-3">
+				<h2>Gesti&#243;n de Ciuadades</h2>
+				<div className="flex gap-2">
+					<Button label="Nueva" icon="pi pi-plus" onClick={openNew} />
+					<Button
+						label="Excel"
+						icon="pi pi-file-excel"
+						severity="success"
+						onClick={handleDownloadExcel}
+					/>
+					<Button label="Cerrar Sesi&#243;n" icon="pi pi-eject" severity="warning" />
+				</div>
+			</div>
+
+			<DataTable
+				value={cities}
+				lazy
+				loading={loading}
+				onSort={onSort}
+				sortField={sortField}
+				sortOrder={sortOrder}
+				paginator
+				rows={rows}
+				first={first}
+				totalRecords={totalRecords}
+				onPage={onPage}
+				rowsPerPageOptions={rowsPerPageOptions}
+			>
+				<Column field="cityId" header="ID" sortable />
+				<Column field="city" header="Ciudad" sortable />
+				<Column field="countryName" header="País" sortable />
+				<Column
+					field="lastUpdate"
+					header="Fecha"
+					sortable
+					body={dateBodyTemplate}
+				/>
+				<Column
+					header="Acciones"
+					body={(row) => (
+						<div className="flex gap-2">
+							<Button icon="pi pi-pencil" onClick={() => editCity(row)} />
+							<Button
+								icon="pi pi-trash"
+								severity="danger"
+								onClick={() => confirmDelete(row)}
+							/>
+						</div>
+					)}
+				/>
+			</DataTable>
+
+			<Dialog
+				header="Ciudad"
+				visible={visible}
+				onHide={() => setVisible(false)}
+				style={{ width: "400px" }}
+			>
+				<div className="p-fluid">
+					<div className="field">
+						<label htmlFor="city">Ciudad</label>
+						<InputText
+							id="city"
+							name="city"
+							value={city.city}
+							onChange={(e) => setCity({ ...city, city: e.target.value })}
+						/>
+					</div>
+
+					<div className="field">
+						<label htmlFor="country">País</label>
+						<Dropdown
+							id="country"
+							name="country"
+							value={city.countryId}
+							options={countries}
+							optionLabel="country"
+							optionValue="countryId"
+							onChange={(e) => setCity({ ...city, countryId: e.value })}
+						/>
+					</div>
+
+					<div className="field">
+						<label htmlFor="lastUpdate">Fecha</label>
+						<Calendar
+							id="lastUpdate"
+							name="lastUpdate"
+							value={city.lastUpdate}
+							onChange={(e) => setCity({ ...city, lastUpdate: e.value })}
+							showIcon
+							showTime
+							hourFormat="24"
+						/>
+					</div>
+
+					<Button label="Guardar" onClick={saveCity} />
+				</div>
+			</Dialog>
+		</div>
+	);
+}
+
+export default App;
