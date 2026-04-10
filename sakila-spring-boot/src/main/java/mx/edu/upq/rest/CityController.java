@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import mx.edu.upq.request.CityRequest;
 import mx.edu.upq.response.CityResponse;
+import mx.edu.upq.response.PageResponse;
 import mx.edu.upq.service.ICityService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -35,14 +36,16 @@ public class CityController {
 	}
 
 	@GetMapping("/pagination")
-	public ResponseEntity<Page<CityResponse>> getCities(
+	public ResponseEntity<PageResponse<CityResponse>> getCities(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "10") int size,
 			@RequestParam(defaultValue = "cityId") String sortField,
 			@RequestParam(defaultValue = "asc") String sortOrder) {
-		Page<CityResponse> citiesPage = cityService.findAllPagintaion(page, size, sortField, sortOrder);
 
-		return ResponseEntity.ok(citiesPage);
+		Page<CityResponse> citiesPage =
+				cityService.findAllPagintaion(page, size, sortField, sortOrder);
+
+		return ResponseEntity.ok(new PageResponse<>(citiesPage));
 	}
 
 	@GetMapping("/{id}")
