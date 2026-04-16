@@ -6,7 +6,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
-public interface ICityMapper {
+public interface ICityReponseMapper {
 
 	@Mapping(source = "cityId", target = "cityId")
 	@Mapping(source = "city", target = "city")

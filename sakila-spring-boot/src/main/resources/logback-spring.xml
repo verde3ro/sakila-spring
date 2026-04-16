@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<include resource="org/springframework/boot/logging/logback/base.xml"/>
+
+	<!-- Perfil desarrollo: consola con DEBUG -->
+	<springProfile name="dev">
+		<logger name="mx.edu.upq" level="DEBUG" additivity="false">
+			<appender-ref ref="CONSOLE"/>
+		</logger>
+		<root level="INFO">
+			<appender-ref ref="CONSOLE"/>
+		</root>
+	</springProfile>
+
+	<!-- Perfil producción: archivo con rotación -->
+	<springProfile name="prod">
+		<property name="LOG_PATH" value="/var/log/sakila-spring-boot"/>
+		<property name="LOG_FILE" value="${LOG_PATH}/application.log"/>
+
+		<appender name="ROLLING_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+			<file>${LOG_FILE}</file>
+			<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+				<fileNamePattern>${LOG_FILE}.%d{yyyy-MM-dd}.gz</fileNamePattern>
+				<maxHistory>30</maxHistory>
+			</rollingPolicy>
+			<encoder>
+				<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+			</encoder>
+		</appender>
+
+		<logger name="mx.edu.upq" level="WARN"/>
+		<root level="WARN">
+			<appender-ref ref="ROLLING_FILE"/>
+		</root>
+	</springProfile>
+</configuration>

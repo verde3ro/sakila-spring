@@ -69,7 +69,7 @@ const App = () => {
 			toast.current?.show({
 				severity: "error",
 				summary: "Error",
-				detail: "Error cargando datos",
+				detail: `Error cargando datos: ${error}`,
 			});
 		} finally {
 			setLoading(false);
@@ -202,7 +202,7 @@ const App = () => {
 
 	const confirmDelete = (row) => {
 		confirmDialog({
-			message: "<b>¿Eliminar registro?</b>",
+			message: "¿Eliminar registro?",
 			header: "Confirmar",
 			icon: "pi pi-exclamation-triangle",
 			accept: () => removeCity(row),
@@ -244,7 +244,7 @@ const App = () => {
 			<ConfirmDialog />
 
 			<div className="flex justify-content-between mb-3">
-				<h2>Gesti&#243;n de Ciuadades</h2>
+				<h2>Administraci&#243;n de Ciudades</h2>
 				<div className="flex gap-2">
 					<Button label="Nueva" icon="pi pi-plus" onClick={openNew} />
 					<Button

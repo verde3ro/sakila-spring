@@ -2,7 +2,7 @@ package mx.edu.upq.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import mx.edu.upq.mapper.ICountryMapper;
+import mx.edu.upq.mapper.ICountryResponseMapper;
 import mx.edu.upq.repository.ICountryRepository;
 import mx.edu.upq.response.CountryResponse;
 import mx.edu.upq.service.ICountryService;
@@ -18,11 +18,11 @@ import java.util.List;
 public class CountryServiceImpl implements ICountryService {
 
 	private final ICountryRepository countryRepository;
-	private final ICountryMapper countryMapper;
+	private final ICountryResponseMapper countryResponseMapper;
 
 	@Override
 	public List<CountryResponse> findAll() {
-		return countryMapper.toResponseList(countryRepository.findAll());
+		return countryResponseMapper.toResponseList(countryRepository.findAll());
 	}
 
 }

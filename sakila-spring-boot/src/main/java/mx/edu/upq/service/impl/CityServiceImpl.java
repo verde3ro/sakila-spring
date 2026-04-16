@@ -3,7 +3,8 @@ package mx.edu.upq.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.edu.upq.exception.InternalException;
-import mx.edu.upq.mapper.ICityMapper;
+import mx.edu.upq.mapper.ICityReponseMapper;
+import mx.edu.upq.mapper.ICityRequestMapper;
 import mx.edu.upq.model.City;
 import mx.edu.upq.model.Country;
 import mx.edu.upq.repository.ICityRepository;
@@ -42,7 +43,8 @@ public class CityServiceImpl implements ICityService {
 
 	private final ICityRepository cityRepository;
 	private final ICountryRepository countryRepository;
-	private final ICityMapper cityMapper;
+	private final ICityReponseMapper cityReponseMapper;
+	private final ICityRequestMapper cityRequestMapper;
 
 	// Mapa para convertir el nombre del campo de ordenamiento al nombre real en la consulta JPQL
 	private static final Map<String, String> SORT_FIELD_MAPPING = Map.of(
@@ -78,11 +80,15 @@ public class CityServiceImpl implements ICityService {
 	@Override
 	public CityResponse create(CityRequest request) {
 		try {
-			City city = new City();
-			city.setCity(request.getCity());
-			city.setLastUpdate(Timestamp.valueOf(request.getLastUpdate()));
+			// Mapear request a entidad (sin país ni ID)
+			City city = cityRequestMapper.toEntity(request);
+			// Asignar país manualmente (requiere consulta)
 			Country country = countryRepository.getReferenceById(request.getCountryId());
 			city.setCountry(country);
+			// La fecha ya viene mapeada, pero si se necesita Timestamp, asegurar conversión
+			if (city.getLastUpdate() == null && request.getLastUpdate() != null) {
+				city.setLastUpdate(Timestamp.valueOf(request.getLastUpdate()));
+			}
 			City saved = cityRepository.save(city);
 			return toResponse(saved);
 		} catch (Exception ex) {
@@ -96,11 +102,16 @@ public class CityServiceImpl implements ICityService {
 		City city = cityRepository.findById(request.getCityId())
 				.orElseThrow(() -> new InternalException("Ciudad no existe para actualizar"));
 		try {
-			city.setCity(request.getCity());
-			city.setLastUpdate(Timestamp.valueOf(request.getLastUpdate()));
+			// Actualizar campos básicos usando el mapper
+			cityRequestMapper.updateEntity(request, city);
+			// Si cambia el país, actualizar referencia
 			if (!Objects.equals(city.getCountry().getCountryId(), request.getCountryId())) {
 				Country country = countryRepository.getReferenceById(request.getCountryId());
 				city.setCountry(country);
+			}
+			// La fecha ya se actualizó con el mapper; si no, forzar conversión
+			if (request.getLastUpdate() != null) {
+				city.setLastUpdate(Timestamp.valueOf(request.getLastUpdate()));
 			}
 			City updated = cityRepository.save(city);
 			return toResponse(updated);
@@ -204,7 +215,7 @@ public class CityServiceImpl implements ICityService {
 	}
 
 	private CityResponse toResponse(City city) {
-		return cityMapper.toResponse(city);
+		return cityReponseMapper.toResponse(city);
 	}
 
 }

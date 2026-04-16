@@ -8,6 +8,7 @@ import mx.edu.upq.response.PageResponse;
 import mx.edu.upq.service.ICityService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,11 +31,13 @@ public class CityController {
 
 	private final ICityService cityService;
 
+	@PreAuthorize("hasAnyAuthority('USER','ADMIN')")
 	@GetMapping("/")
 	public ResponseEntity<List<CityResponse>> getCities() {
 		return ResponseEntity.ok(cityService.findAll());
 	}
 
+	@PreAuthorize("hasAnyAuthority('USER','ADMIN')")
 	@GetMapping("/pagination")
 	public ResponseEntity<PageResponse<CityResponse>> getCities(
 			@RequestParam(defaultValue = "0") int page,
@@ -48,27 +51,32 @@ public class CityController {
 		return ResponseEntity.ok(new PageResponse<>(citiesPage));
 	}
 
+	@PreAuthorize("hasAuthority('ADMIN')")
 	@GetMapping("/{id}")
 	public ResponseEntity<CityResponse> getCity(@PathVariable short id) {
 		return ResponseEntity.ok(cityService.findById(id));
 	}
 
+	@PreAuthorize("hasAuthority('ADMIN')")
 	@PostMapping
 	public ResponseEntity<CityResponse> create(@Valid @RequestBody CityRequest request) {
 		return ResponseEntity.ok(cityService.create(request));
 	}
 
+	@PreAuthorize("hasAuthority('ADMIN')")
 	@PutMapping
 	public ResponseEntity<CityResponse> update(@Valid @RequestBody CityRequest request) {
 		return ResponseEntity.ok(cityService.update(request));
 	}
 
+	@PreAuthorize("hasAuthority('ADMIN')")
 	@DeleteMapping("/{id}")
 	public ResponseEntity<Void> delete(@PathVariable short id) {
 		cityService.delete(id);
 		return ResponseEntity.noContent().build();
 	}
 
+	@PreAuthorize("hasAnyAuthority('USER','ADMIN')")
 	@GetMapping("/excel")
 	public ResponseEntity<Map<String, String>> exportExcel() {
 		String base64 = cityService.generateExcel();
