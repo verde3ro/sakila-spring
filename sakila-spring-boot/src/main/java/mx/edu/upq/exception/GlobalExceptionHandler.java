@@ -58,4 +58,19 @@ public class GlobalExceptionHandler {
 		);
 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
 	}
+
+	/**
+	 * Captura cualquier excepción no manejada y devuelve JSON en lugar de una vista.
+	 * Esto evita el "circular view path" para errores inesperados dentro de controllers.
+	 */
+	@ExceptionHandler(Exception.class)
+	public ResponseEntity<ErrorResponse> handleGeneric(Exception ex) {
+		ErrorResponse error = new ErrorResponse(
+				"Error inesperado",
+				500,
+				ex.getMessage() != null ? ex.getMessage() : "Ocurrió un error inesperado"
+		);
+		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+	}
+
 }

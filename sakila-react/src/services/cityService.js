@@ -1,16 +1,11 @@
-import axios from "axios";
-
-const API = "http://localhost:8080/api";
+// src/services/cityService.js
+import api from "./api";
 
 export const getCitiesPagination = (params) =>
-	axios.get(`${API}/cities/pagination`, { params });
+	api.get("/cities/pagination", { params });
 
-export const createCity = (data) => axios.post(`${API}/cities`, data);
-
-export const updateCity = (data) => axios.put(`${API}/cities`, data);
-
-export const deleteCity = (id) => axios.delete(`${API}/cities/${id}`);
-
-export const getCountries = () => axios.get(`${API}/coutries/`);
-
-export const downloadExcel = () => axios.get(`${API}/cities/excel`);
+export const createCity = (data) => api.post("/cities", data);
+export const updateCity = (data) => api.put("/cities", data);
+export const deleteCity = (id) => api.delete(`/cities/${id}`);
+export const getCountries = () => api.get("/countries/");
+export const downloadExcel = () => api.get("/cities/excel");
