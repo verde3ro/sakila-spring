@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/countries")   // Corregido (antes "coutries")
+@RequestMapping("/api/countries")
 @CrossOrigin(origins = "http://localhost:3000")
 @RequiredArgsConstructor
 public class CountryController {

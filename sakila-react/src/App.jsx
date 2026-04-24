@@ -1,6 +1,6 @@
 // src/App.jsx
 import { useEffect, useState, useRef } from "react";
-import { getUser, login, logout } from "./services/authService";
+import { getUser, login, logout, userManager } from "./services/authService";
 import {
 	getCitiesPagination,
 	deleteCity,
@@ -53,15 +53,32 @@ const App = () => {
 	const [sortField, setSortField] = useState("cityId");
 	const [sortOrder, setSortOrder] = useState(1);
 
+	// Suscribirse a eventos de autenticación
 	useEffect(() => {
+		const handleUserLoaded = (user) => {
+			setIsAuthenticated(true);
+			setUsername(user.profile?.sub || user.profile?.preferred_username || "Usuario");
+		};
+		const handleUserUnloaded = () => {
+			setIsAuthenticated(false);
+			setUsername("");
+		};
+
+		userManager.events.addUserLoaded(handleUserLoaded);
+		userManager.events.addUserUnloaded(handleUserUnloaded);
+
+		// Verificación inicial
 		getUser().then((u) => {
 			if (u && !u.expired) {
 				setIsAuthenticated(true);
 				setUsername(u.profile?.sub || u.profile?.preferred_username || "Usuario");
-			} else {
-				setIsAuthenticated(false);
 			}
 		});
+
+		return () => {
+			userManager.events.removeUserLoaded(handleUserLoaded);
+			userManager.events.removeUserUnloaded(handleUserUnloaded);
+		};
 	}, []);
 
 	useEffect(() => {
@@ -202,10 +219,22 @@ const App = () => {
 			<div className="flex justify-content-between align-items-center mb-3">
 				<h2>Administración de Ciudades</h2>
 				<div className="flex gap-2 align-items-center">
-					<span className="mr-3">Bienvenido, <strong>{username}</strong></span>
+          <span className="mr-3">
+            Bienvenido, <strong>{username}</strong>
+          </span>
 					<Button label="Nueva" icon="pi pi-plus" onClick={openNew} />
-					<Button label="Excel" icon="pi pi-file-excel" severity="success" onClick={handleDownloadExcel} />
-					<Button label="Cerrar Sesión" icon="pi pi-sign-out" severity="warning" onClick={handleLogout} />
+					<Button
+						label="Excel"
+						icon="pi pi-file-excel"
+						severity="success"
+						onClick={handleDownloadExcel}
+					/>
+					<Button
+						label="Cerrar Sesión"
+						icon="pi pi-sign-out"
+						severity="warning"
+						onClick={handleLogout}
+					/>
 				</div>
 			</div>
 
@@ -238,11 +267,20 @@ const App = () => {
 				/>
 			</DataTable>
 
-			<Dialog header="Ciudad" visible={visible} onHide={() => setVisible(false)} style={{ width: "400px" }}>
+			<Dialog
+				header="Ciudad"
+				visible={visible}
+				onHide={() => setVisible(false)}
+				style={{ width: "400px" }}
+			>
 				<div className="p-fluid">
 					<div className="field">
 						<label htmlFor="city">Ciudad</label>
-						<InputText id="city" value={city.city} onChange={(e) => setCity({ ...city, city: e.target.value })} />
+						<InputText
+							id="city"
+							value={city.city}
+							onChange={(e) => setCity({ ...city, city: e.target.value })}
+						/>
 					</div>
 					<div className="field">
 						<label htmlFor="country">País</label>
