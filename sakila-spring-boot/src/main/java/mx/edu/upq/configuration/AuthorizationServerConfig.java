@@ -33,7 +33,6 @@ import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.time.Duration;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Configuration
 public class AuthorizationServerConfig {
@@ -114,7 +113,9 @@ public class AuthorizationServerConfig {
 	// ========== 4. Configuración de rutas ==========
 	@Bean
 	public AuthorizationServerSettings authorizationServerSettings() {
-		return AuthorizationServerSettings.builder().build();
+		return AuthorizationServerSettings.builder()
+				.issuer("http://localhost:8080")  // ← issuer de tu servidor
+				.build();
 	}
 
 	// ========== 5. Personalizador de tokens (¡LA CLAVE PARA LOS ROLES!) ==========
@@ -124,10 +125,11 @@ public class AuthorizationServerConfig {
 			if (context.getPrincipal() instanceof UsernamePasswordAuthenticationToken auth) {
 				var roles = auth.getAuthorities().stream()
 						.map(GrantedAuthority::getAuthority)
-						.collect(Collectors.toList());
+						.toList();
 				// CAMBIO: se mantiene el claim "roles" sin prefijo, igual que tu UserDetailsService
 				context.getClaims().claim("roles", roles);
 			}
 		};
 	}
+
 }
