@@ -28,6 +28,7 @@ public class SecurityConfig {
 				.securityMatcher("/**")          // Aplica a cualquier ruta no capturada por cadenas de orden menor
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers("/oauth/authorize**", "/login**", "/error**").permitAll()
+						.requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll() // OpenAPI público
 						.anyRequest().authenticated()
 				)
 				.formLogin(withDefaults());      // Habilita el formulario de login predeterminado

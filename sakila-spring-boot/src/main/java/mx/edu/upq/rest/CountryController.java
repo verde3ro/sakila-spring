@@ -1,5 +1,7 @@
 package mx.edu.upq.rest;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import mx.edu.upq.response.CountryResponse;
 import mx.edu.upq.service.ICountryService;
@@ -18,6 +20,8 @@ public class CountryController {
 
 	private final ICountryService countryService;
 
+	@Operation(summary = "Obtener todos los países", description = "Solo ADMIN")
+	@ApiResponse(responseCode = "200", description = "Lista de países")
 	@PreAuthorize("hasAnyAuthority('ADMIN')")
 	@GetMapping("/")
 	public ResponseEntity<List<CountryResponse>> getCountries() {
