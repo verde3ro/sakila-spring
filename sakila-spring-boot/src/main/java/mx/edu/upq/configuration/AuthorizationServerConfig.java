@@ -46,13 +46,18 @@ public class AuthorizationServerConfig {
 
 		http
 				.cors(cors -> cors.configurationSource(corsConfigurationSource)) // CAMBIO: CORS para endpoints /oauth2/**
-				.securityMatcher("/oauth2/**", "/.well-known/**", "/.well-known/openid-configuration") // CAMBIO: incluir rutas de descubrimiento
+				.securityMatcher("/oauth2/**", "/.well-known/**", "/.well-known/openid-configuration", "/connect/**")// CAMBIO: incluir rutas de descubrimiento
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers("/.well-known/**").permitAll()   // PERMITIR acceso público a la configuración OpenID
 						.anyRequest().authenticated()                    // el resto (oauth2/**) requiere autenticación
 				)
 				.csrf(csrf -> csrf.ignoringRequestMatchers(authServerConfigurer.getEndpointsMatcher()))
 				.with(authServerConfigurer, Customizer.withDefaults())
+				/*.exceptionHandling(exceptions ->
+						exceptions.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login"))
+				);
+				*/
+				.with(authServerConfigurer.oidc(Customizer.withDefaults()), Customizer.withDefaults())
 				.exceptionHandling(exceptions ->
 						exceptions.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login"))
 				);
@@ -66,15 +71,16 @@ public class AuthorizationServerConfig {
 		// CAMBIO: Cliente público sin secreto, PKCE obligatorio, redirect al frontend React
 		RegisteredClient registeredClient = RegisteredClient.withId(UUID.randomUUID().toString())
 				.clientId("clientapp")
-				// .clientSecret(passwordEncoder.encode("123456"))  ELIMINADO: cliente público no usa secreto
 				.clientAuthenticationMethod(ClientAuthenticationMethod.NONE)            // Cliente público
 				.authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
 				.authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
-				// ELIMINADO: AuthorizationGrantType.CLIENT_CREDENTIALS (no aplica sin secreto)
 				.redirectUri("http://localhost:3000/callback")                          // CAMBIO: URL del frontend React
-				.scope("read_profile_info")
+				.postLogoutRedirectUri("http://localhost:3000")
+				.scope("api")
+				.scope("openid")   // necesario para OIDC
+				.scope("profile")  // opcional, para claims como preferred_username
 				.clientSettings(ClientSettings.builder()
-						.requireProofKey(true)                                          // CAMBIO: PKCE obligatorio
+						.requireProofKey(true)   // PKCE obligatorio ✅
 						.requireAuthorizationConsent(false)
 						.build())
 				.tokenSettings(TokenSettings.builder()

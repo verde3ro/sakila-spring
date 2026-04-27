@@ -1,20 +1,17 @@
-import {UserManager, WebStorageStateStore} from 'oidc-client-ts';
+import { UserManager, WebStorageStateStore } from 'oidc-client-ts';
 
 const userManagerConfig = {
-	authority: 'http://localhost:8080',               // Authorization Server
+	authority: 'http://localhost:8080',
 	client_id: 'clientapp',
-	redirect_uri: 'http://localhost:3000/callback',   // Debe coincidir con el backend
+	redirect_uri: 'http://localhost:3000/callback',
 	response_type: 'code',
-	scope: 'openid profile read_profile_info',        // 'openid' es necesario para obtener el sub
-	loadUserInfo: false,                              // No pedimos /userinfo
-	automaticSilentRenew: false,                      // Simplificamos
-	pkce: true,                                       // Habilita PKCE (obligatorio)
+	scope: 'openid profile api',   // OIDC + los que necesites
+	loadUserInfo: false,           // si quieres obtener /userinfo, pon true
+	automaticSilentRenew: false,
+	pkce: true,
 	code_challenge_method: 'S256',
 	userStore: new WebStorageStateStore({ store: window.localStorage }),
-	metadata: {
-		authorization_endpoint: 'http://localhost:8080/oauth2/authorize',
-		token_endpoint: 'http://localhost:8080/oauth2/token'
-	}
+
 };
 
 export const userManager = new UserManager(userManagerConfig);
@@ -25,11 +22,5 @@ export const logout = () => userManager.signoutRedirect({
 	post_logout_redirect_uri: 'http://localhost:3000'
 });
 
-export const getUser = async () => {
-	return await userManager.getUser();
-};
-
-export const getAccessToken = async () => {
-	const user = await getUser();
-	return user?.access_token;
-};
+export const getUser = async () => userManager.getUser();
+export const getAccessToken = async () => (await getUser())?.access_token;
