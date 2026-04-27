@@ -1,36 +1,88 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configuration>
-	<include resource="org/springframework/boot/logging/logback/base.xml"/>
+<configuration scan="true" scanPeriod="60 seconds">
+	<springProperty scope="context" name="LOG_PATH" source="LOG_PATH" defaultValue="logs"/>
+	<springProperty scope="context" name="spring.profiles.active" source="spring.profiles.active" defaultValue="prod"/>
 
-	<!-- Perfil desarrollo: consola con DEBUG -->
+	<!-- Appender común para consola -->
+	<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %logger{36} - %msg%n</pattern>
+		</encoder>
+	</appender>
+
+	<!-- Root TEMPORAL para evitar warnings tempranos -->
+	<root level="WARN">
+		<appender-ref ref="CONSOLE"/>
+	</root>
+
+	<!-- Logger para HikariCP -->
+	<logger name="com.zaxxer.hikari" level="WARN" additivity="false">
+		<appender-ref ref="CONSOLE"/>
+	</logger>
+
+	<!-- Logger para pruebas -->
+	<logger name="mx.edu.upq.SiiBackAdminApplicationTests" level="INFO" additivity="false">
+		<appender-ref ref="CONSOLE"/>
+	</logger>
+
+	<!-- Logger para frameworks -->
+	<logger name="org.springframework" level="WARN"/>
+	<logger name="org.springframework.security" level="WARN"/>
+	<logger name="org.springframework.web" level="WARN"/>
+	<logger name="org.hibernate" level="WARN"/>
+
+	<!-- Configuración para perfil DEV -->
 	<springProfile name="dev">
-		<logger name="mx.edu.upq" level="DEBUG" additivity="false">
-			<appender-ref ref="CONSOLE"/>
-		</logger>
-		<root level="INFO">
-			<appender-ref ref="CONSOLE"/>
-		</root>
-	</springProfile>
-
-	<!-- Perfil producción: archivo con rotación -->
-	<springProfile name="prod">
-		<property name="LOG_PATH" value="/var/log/sakila-spring-boot"/>
-		<property name="LOG_FILE" value="${LOG_PATH}/application.log"/>
-
-		<appender name="ROLLING_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-			<file>${LOG_FILE}</file>
+		<appender name="FILE_DEV" class="ch.qos.logback.core.rolling.RollingFileAppender">
+			<file>${LOG_PATH}/sakila-spring-log</file>
 			<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-				<fileNamePattern>${LOG_FILE}.%d{yyyy-MM-dd}.gz</fileNamePattern>
-				<maxHistory>30</maxHistory>
+				<fileNamePattern>${LOG_PATH}/sakila-spring-%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+				<maxHistory>1</maxHistory>
 			</rollingPolicy>
 			<encoder>
-				<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+				<pattern>[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %logger{36} - %msg%n%ex{full}</pattern>
 			</encoder>
 		</appender>
 
-		<logger name="mx.edu.upq" level="WARN"/>
-		<root level="WARN">
-			<appender-ref ref="ROLLING_FILE"/>
+		<logger name="com.zaxxer.hikari" level="WARN" additivity="false">
+			<appender-ref ref="CONSOLE"/>
+			<appender-ref ref="FILE_DEV"/>
+		</logger>
+
+		<logger name="mx.edu.upq" level="INFO" additivity="false">
+			<appender-ref ref="CONSOLE"/>
+			<appender-ref ref="FILE_DEV"/>
+		</logger>
+
+		<root level="INFO">
+			<appender-ref ref="CONSOLE"/>
+			<appender-ref ref="FILE_DEV"/>
+		</root>
+	</springProfile>
+
+	<!-- Configuración para perfil PROD -->
+	<springProfile name="prod">
+		<appender name="FILE_PROD" class="ch.qos.logback.core.rolling.RollingFileAppender">
+			<file>/var/log/sakila/sakila-spring.log</file>
+			<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+				<fileNamePattern>/var/log/sakila/sakila-spring-%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+				<maxHistory>30</maxHistory>
+			</rollingPolicy>
+			<encoder>
+				<pattern>[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %logger{36} - %msg%n%ex{full}</pattern>
+			</encoder>
+		</appender>
+
+		<logger name="com.zaxxer.hikari" level="WARN" additivity="false">
+			<appender-ref ref="FILE_PROD"/>
+		</logger>
+
+		<logger name="mx.edu.upq" level="INFO" additivity="false">
+			<appender-ref ref="FILE_PROD"/>
+		</logger>
+
+		<root level="INFO">
+			<appender-ref ref="FILE_PROD"/>
 		</root>
 	</springProfile>
 </configuration>
