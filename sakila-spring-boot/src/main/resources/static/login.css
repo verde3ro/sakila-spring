@@ -1,0 +1,56 @@
+/* login.css - Estilos personalizados para la página de login */
+
+body {
+	background: #f0f2f5;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	min-height: 100vh;
+	margin: 0;
+	font-family: var(--font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif);
+}
+
+.login-card {
+	background: white;
+	border-radius: 12px;
+	box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+	padding: 2rem;
+	width: 100%;
+	max-width: 400px;
+}
+
+.field {
+	margin-bottom: 1.5rem;
+}
+
+.field label {
+	display: block;
+	margin-bottom: 0.5rem;
+	font-weight: 500;
+}
+
+.p-inputtext {
+	width: 100%;
+}
+
+.login-button {
+	width: 100%;
+}
+
+.error-message {
+	color: #f44336;
+	margin-top: 1rem;
+	text-align: center;
+}
+
+.logout-message {
+	color: #4caf50;
+	margin-top: 1rem;
+	text-align: center;
+}
+
+/* Ícono del candado - el color se toma de la variable primaria de PrimeReact */
+.lock-icon {
+	font-size: 3rem;
+	color: var(--primary-color, #3b82f6);
+}

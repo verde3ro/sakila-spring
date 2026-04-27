@@ -344,7 +344,6 @@ const App = () => {
 	};
 
 	// Funciones de autenticación
-	const handleLogin = () => login();
 	const handleLogout = () => logout();
 
 	/**

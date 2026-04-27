@@ -59,7 +59,7 @@ public class AuthorizationServerConfig {
 				*/
 				.with(authServerConfigurer.oidc(Customizer.withDefaults()), Customizer.withDefaults())
 				.exceptionHandling(exceptions ->
-						exceptions.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login"))
+						exceptions.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login.html"))
 				);
 
 		return http.build();
