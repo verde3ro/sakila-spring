@@ -35,6 +35,28 @@ export default defineConfig({
 				changeOrigin: true,
 				secure: false,
 			},
+			// Cambio
+			"/login.html": {
+				target: "http://localhost:8080",
+				changeOrigin: true,
+				secure: false,
+			},
+			// solo login
+			"/login.css": {
+				target: "http://localhost:8080",
+				changeOrigin: true,
+				secure: false,
+			},
+			"/login.js": {
+				target: "http://localhost:8080",
+				changeOrigin: true,
+				secure: false,
+			},
+			"/favicon.ico": {
+				target: "http://localhost:8080",
+				changeOrigin: true,
+				secure: false,
+			}
 		},
 	},
 });
