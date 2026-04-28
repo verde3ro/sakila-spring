@@ -76,7 +76,10 @@ public class SecurityConfig {
 				.logout(logout -> logout
 						.logoutSuccessUrl("/login.html?logout")
 						.permitAll()
-				).csrf(csrf -> csrf.ignoringRequestMatchers("/login")); ;
+				).csrf(csrf -> csrf
+						.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+						.ignoringRequestMatchers("/api/**", "/login")
+				);
 
 		return http.build();
 	}

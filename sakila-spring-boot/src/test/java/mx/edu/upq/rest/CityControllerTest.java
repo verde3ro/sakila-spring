@@ -33,8 +33,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Solo se carga el controlador y la configuración de Spring MVC/Security.
  * El servicio real (ICityService) se reemplaza por un mock.
  */
-@WebMvcTest(CityController.class)
-class CityControllerTest {
+@WebMvcTest(CityRestController.class)
+class CityRestControllerTest {
 
 	@Autowired
 	private MockMvc mockMvc;           // Cliente para simular peticiones HTTP

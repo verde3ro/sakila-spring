@@ -21,8 +21,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Prueba del controlador CountryController.
  * Verifica el endpoint GET /api/countries/ con un mock del servicio ICountryService.
  */
-@WebMvcTest(CountryController.class)
-class CountryControllerTest {
+@WebMvcTest(CountryRestController.class)
+class CountryRestControllerTest {
 
 	@Autowired
 	private MockMvc mockMvc;

@@ -9,8 +9,8 @@ public class StaticResourceConfig implements WebMvcConfigurer {
 
 	@Override
 	public void addResourceHandlers(ResourceHandlerRegistry registry) {
-		registry.addResourceHandler("/login.html", "/login.css", "/login.js")
-				.addResourceLocations("classpath:/static/"); // Directorio, no archivo
+		registry.addResourceHandler("/login.html", "/login.css", "/login.js", "/favicon.ico")
+				.addResourceLocations("classpath:/static/");
 	}
 
 }

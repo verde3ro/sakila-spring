@@ -33,7 +33,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Tag(name = "Cities", description = "Operaciones relacionadas con ciudades")
 @SecurityRequirement(name = "bearerAuth")
-public class CityController {
+public class CityRestController {
 
 	private final ICityService cityService;
 

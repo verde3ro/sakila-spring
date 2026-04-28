@@ -152,7 +152,9 @@ const App = () => {
 	useEffect(() => {
 		if (isAuthenticated) {
 			loadCities({ page: 0, size: rows, sf: sortField, so: sortOrder });
-			loadCountries();
+			if (isAdmin) {
+				loadCountries();
+			}
 		}
 	}, [isAuthenticated]);
 
@@ -395,7 +397,7 @@ const App = () => {
 
 			{/* Barra superior con título, usuario y botones de acción */}
 			<div className="flex justify-content-between align-items-center mb-3">
-				<h2>Administración de Ciudades</h2>
+				<h2>Gesti&#243;n de Ciudades</h2>
 				<div className="flex gap-2 align-items-center">
           <span className="mr-3">
             Bienvenido, <strong>{username}</strong> ({userRoles.join(", ")})
