@@ -11,6 +11,9 @@ public class StaticResourceConfig implements WebMvcConfigurer {
 	public void addResourceHandlers(ResourceHandlerRegistry registry) {
 		registry.addResourceHandler("/login.html", "/login.css", "/login.js", "/favicon.ico")
 				.addResourceLocations("classpath:/static/");
+
+		registry.addResourceHandler("/error")
+				.addResourceLocations("classpath:/static/error.html");
 	}
 
 }
