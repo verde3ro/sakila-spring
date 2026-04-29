@@ -53,6 +53,7 @@ public class AuthorizationServerConfig {
 				)
 				.csrf(csrf -> csrf.ignoringRequestMatchers(authServerConfigurer.getEndpointsMatcher()))
 				.with(authServerConfigurer, Customizer.withDefaults())
+				.with(authServerConfigurer.oidc(Customizer.withDefaults()), Customizer.withDefaults())
 				/*.exceptionHandling(exceptions ->
 						exceptions.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login"))
 				);
@@ -80,7 +81,7 @@ public class AuthorizationServerConfig {
 				.scope("openid")   // necesario para OIDC
 				.scope("profile")  // opcional, para claims como preferred_username
 				.clientSettings(ClientSettings.builder()
-						.requireProofKey(true)   // PKCE obligatorio ✅
+						.requireProofKey(true)   // PKCE obligatorio
 						.requireAuthorizationConsent(false)
 						.build())
 				.tokenSettings(TokenSettings.builder()
