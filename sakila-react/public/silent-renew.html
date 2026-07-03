@@ -5,11 +5,20 @@
 	<title>Silent Renew</title>
 </head>
 <body>
-<!-- FIX: Se requiere ejecutar signinSilentCallback() para que oidc-client-ts
-     procese la respuesta del iframe de renovación silenciosa -->
 <script type="module">
-	import { UserManager } from "https://cdn.jsdelivr.net/npm/oidc-client-ts@3/dist/browser/oidc-client-ts.min.js";
-	new UserManager({}).signinSilentCallback().catch(console.error);
+	import {
+		UserManager,
+		WebStorageStateStore
+	} from "https://cdn.jsdelivr.net/npm/oidc-client-ts@3/dist/browser/oidc-client-ts.min.js";
+
+	new UserManager({
+		authority: 'http://localhost:8080',
+		client_id: 'clientapp',
+		redirect_uri: 'http://localhost:3000/callback',
+		response_type: 'code',
+		scope: 'openid profile api',
+		userStore: new WebStorageStateStore({store: window.localStorage}),
+	}).signinSilentCallback().catch(console.error);
 </script>
 </body>
 </html>
