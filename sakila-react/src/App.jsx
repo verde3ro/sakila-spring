@@ -13,6 +13,7 @@ import {
 	downloadExcel,
 } from "./services/cityService";
 
+import NavBar from "./components/NavBar";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Button } from "primereact/button";
@@ -394,14 +395,16 @@ const App = () => {
 			{/* Toast para notificaciones */}
 			<Toast ref={toast} />
 			<ConfirmDialog />
+			{/* Navegación entre páginas (Ciudades / Acerca de / Contacto) */}
+			<NavBar />
 
 			{/* Barra superior con título, usuario y botones de acción */}
 			<div className="flex justify-content-between align-items-center mb-3">
-				<h2>Gesti&#243;n de Ciudades</h2>
+				<h2>Ciudades</h2>
 				<div className="flex gap-2 align-items-center">
-          <span className="mr-3">
-            Bienvenido, <strong>{username}</strong> ({userRoles.join(", ")})
-          </span>
+				<span className="mr-3">
+					Bienvenido, <strong>{username}</strong> ({userRoles.join(", ")})
+				</span>
 					{isAdmin && (
 						<Button label="Nueva" icon="pi pi-plus" onClick={openNew} />
 					)}
